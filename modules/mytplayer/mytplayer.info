@@ -1,0 +1,6 @@
+;$Id$
+name = "Media Youtube Player"
+description = "Allow generate to playlist using youtube videos"
+core = 6.x
+dependencies[] = "emfield"
+package = "Media"
