@@ -1,2 +1,142 @@
 <?php
 //$id$
+
+/**
+ * Implementation of hook_help().
+ */
+function media_ytplayer_help($path, $arg) {
+  $output = '';
+  switch ($path) {
+    case "admin/help#media_ytplayer":
+      $ouput .= '<p>' . t("Help me with more documentation.") . '</p>';
+      break;
+  }
+  
+  return $output;
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function media_ytplayer_perm() {
+  return array("access content");
+}
+
+function media_ytplayer_theme() {
+  return array(
+    'player' => array(
+      'template' => 'player',
+      'arguments' => array('vars' => NULL),
+    ),
+  );
+}
+
+function template_preprocess_player(&$vars) {
+  media_ytplayer_add_css();
+  
+  media_ytplayer_add_js();
+  media_ytplayer_add_js('swfobject');
+  media_ytplayer_add_js('youtube');
+  media_ytplayer_add_js('jcarousellite');
+  //print "preproccess";print_r($vars);
+  /*if ($vars['block']) {
+    $vars['template_files'][] = 'player';
+  }*/
+  
+  //$vars['title'] = check_plain($vars['title']);
+  
+}
+
+function media_ytplayer_add_js($file = 'base') {
+  $path = drupal_get_path('module', 'media_ytplayer');
+  if ($file == 'swfobject') { $file = $file . '/' .$file; }
+  
+  drupal_add_js($path . '/js/' . $file . '.js');
+}
+
+function media_ytplayer_add_css($file = 'media_ytplayer') {
+  $path = drupal_get_path('module', 'media_ytplayer');
+  
+  drupal_add_css($path . '/css/' . $file . '.css');
+}
+
+/**
+ * Implementation of hook_block().
+ */
+function media_ytplayer_block($op = 'list', $delta = 0, $edit = array()) {
+  if ($op == "list") {
+    $block = array();
+    $block[0]["info"] = t("Player Youtube");
+  }
+  elseif ($op == "view") {
+    $content = _media_ytplayer_videos();
+
+    $block['subject'] = "Playlist";
+    if ($content == '') {
+      $block['content'] = "Sorry no content";
+    }
+    else {
+      $block['content'] = theme('player', $content);
+    }
+  }
+  
+  return $block;
+}
+
+function media_ytplayer_admin() {
+  $form = array();
+  
+  $form['media_ytplayer_type'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Content type'),
+    '#size' => 10,
+    '#maxlenght' => 10,
+    '#description' => t('Content type for the video'),
+    '#required' => TRUE,
+  );
+  
+  return system_settings_form($form);
+}
+
+function _media_ytplayer_videos() {
+  $content = '';
+  $nodes = array();
+  $type = variable_get("media_ytplayer_type", "");
+  //print "type".$type;
+  $query = "SELECT node.nid AS nid FROM {node} node  WHERE node.type in ('" . $type . "')";
+  $result = db_query($query);
+  
+  while ($data = db_fetch_object($result)) {
+    $nodes[] = node_load($data->nid);
+  }
+  
+  $data = array(
+    'nodes' => $nodes,
+  );
+  
+  return $data;
+}
+
+function media_ytplayer_validate($form, &$form_state) {
+  $type = $form_state['values']['media_ytplayer_type'];
+  
+  if (!is_numeric($type)) {
+    form_set_error('media_ytplayer_type', t('You must enter a type valid'));
+  }
+}
+
+function media_ytplayer_menu() {
+  $items = array();
+  
+  $items['admin/settings/media_ytplayer'] = array(
+    'title' => 'Embedded Media Player',
+    'description' => 'Your config for Embedded Media Player',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('media_ytplayer_admin'),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  
+  return $items;
+}
+
