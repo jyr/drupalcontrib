@@ -6,20 +6,22 @@ $nodes = $vars['nodes'];
 $system_types = _content_type_info();
 //print_r($system_types['fields']['field_youtubeprev']);
 $field = $system_types['fields']['field_video'];
+$yturl_base = "http://www.youtube.com/v/";
+$ytargs = "?enablejsapi=1&playerapiid=ytplayer";
 ?>
 <div id="player">
   <ul>
   <?php
     $j = 1;
-    foreach ($nodes as $node) { //print_r($node);
+    foreach ($nodes as $node) {
   ?>
-    <li class="video-yt" id="<?php print "l-ytplayer".$j;?>">
+    <li class="video-yt" id="<?php print "li-ytplayer".$j;?>">
       <div id="ytapiplayer-<?php print $j;?>">
         You need Flash player 8+ and JavaScript enabled to view this video.
       </div>
       <script type="text/javascript">
         var embed = 
-        <?php print "\"http://www.youtube.com/v/".$node->field_video[0]['value']."?enablejsapi=1&playerapiid=ytplayer".$j."\";";?>
+        <?php print "\"".$yturl_base.$node->field_video[0]['value'].$ytargs.$j."\";";?>
         var id ="ytapiplayer-"+<?php print $j?>;
         var params = { allowScriptAccess: "always" };
         var atts = { id: "myytplayer"+<?php print $j++;?> };
@@ -37,7 +39,6 @@ $field = $system_types['fields']['field_video'];
   <?php
     $i = 1;
     foreach($nodes as $node){
-      //$node = node_load($video->nid);
       if($i == 1){ $class = 'selected';}
       if($i == 2){ $class = 'midle';}
     ?>

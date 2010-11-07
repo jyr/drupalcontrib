@@ -1,65 +1,33 @@
-var ytswf1;
-var ytswf2;
-var ytswf3;
+var ytswf = [];
 
+/**
+ * The 'onYouTubePlayerReady' function executes when the onReady event
+ * fires, indicating that the player is loaded, initialized and ready
+ * to receive API calls.
+ * @param {string} playerId Mandatory A value that identifies the player.
+ */
 function onYouTubePlayerReady(playerId) {
-    var lid = "#l-"+playerId;
-    if(lid.substr(-1) == 1){
-        ytswf1 = document.getElementById("my"+playerId);
-    }
-    if(lid.substr(-1) == 2){
-        ytswf2 = document.getElementById("my"+playerId);
-    }
-    if(lid.substr(-1) == 3){
-        ytswf3 = document.getElementById("my"+playerId);
-    }
+    var lid = "#li-"+playerId;
+    $('li.video-yt').each(function(index) {
+        if(lid.substr(-1) == index+1){
+            ytswf[index+1] = document.getElementById("my" + playerId);
+        }
+    });
 }
 
+/**
+ * The 'play' function plays the currently cued/loaded video. It calls
+ * player.playVideo().
+ */
 function play(position) {
-    if(position == "1"){
-        ytswf1.playVideo();
-        ytswf2.stopVideo();
-        ytswf3.stopVideo();
-    }
-    
-    if(position == "2"){
-        ytswf1.stopVideo();
-        ytswf2.playVideo();
-        ytswf3.stopVideo();
-    }
-
-    if(position == "3"){
-        ytswf1.stopVideo();
-        ytswf2.stopVideo();
-        ytswf3.playVideo();
-    }
-
+    for (var i=1; i < ytswf.length; i++) {
+        if (position == i){
+            ytswf[i].playVideo();
+            $('#extrainfo-' + i).addClass("selected");
+        }
+        else {
+            ytswf[i].stopVideo();
+            $('#extrainfo-' + i).removeClass("selected");
+        }
+    };
 }
-
-function stop() {
-    ytswf.stopVideo();
-}
-
-function pause() {
-    ytswf.pauseVideo();
-}
-
-$(document).ready(function(){
-    $(".1").click(function(){
-        $('#extrainfo-1').addClass("selected");
-        $('#extrainfo-2').removeClass("selected");
-        $('#extrainfo-3').removeClass("selected");
-    });
-
-    $(".2").click(function(){
-        $('#extrainfo-1').removeClass("selected");
-        $('#extrainfo-2').addClass("selected");
-        $('#extrainfo-3').removeClass("selected");
-    });
-
-    $(".3").click(function(){
-         $('#extrainfo-1').removeClass("selected");
-         $('#extrainfo-2').removeClass("selected");
-         $('#extrainfo-3').addClass("selected");
-    });
-});
