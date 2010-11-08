@@ -38,18 +38,15 @@ function template_preprocess_player(&$vars) {
   media_ytplayer_add_js('swfobject');
   media_ytplayer_add_js('youtube');
   media_ytplayer_add_js('jcarousellite');
-  //print "preproccess";print_r($vars);
-  /*if ($vars['block']) {
-    $vars['template_files'][] = 'player';
-  }*/
-  
-  //$vars['title'] = check_plain($vars['title']);
   
 }
 
 function media_ytplayer_add_js($file = 'base') {
   $path = drupal_get_path('module', 'media_ytplayer');
-  if ($file == 'swfobject') { $file = $file . '/' .$file; }
+  
+  if ($file == 'swfobject') { 
+    $file = $file . '/' . $file;
+  }
   
   drupal_add_js($path . '/js/' . $file . '.js');
 }
@@ -85,43 +82,96 @@ function media_ytplayer_block($op = 'list', $delta = 0, $edit = array()) {
 
 function media_ytplayer_admin() {
   $form = array();
+  $options = _media_ytplayer_content_type();
   
   $form['media_ytplayer_type'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Enabled content type'),
+    '#options' => $options,
+    '#default_value' => variable_get('media_ytplayer_type', array()),
+    '#description' => t('Content type with field of video'),
+    //'#required' => TRUE,
+  );
+  
+  $form['media_ytplayer_limit'] = array(
     '#type' => 'textfield',
-    '#title' => t('Content type'),
+    '#title' => t('Limit'),
+    '#default_value' => variable_get("media_ytplayer_limit", 2),
     '#size' => 10,
     '#maxlenght' => 10,
-    '#description' => t('Content type for the video'),
-    '#required' => TRUE,
+    '#description' => t('Limit of videos to show'),
+    //'#required' => TRUE,
   );
   
   return system_settings_form($form);
 }
 
+function _media_ytplayer_content_type() {
+  $fieldTypes = array_keys(_content_field_types());
+  $contentTypes = content_types();
+  foreach ($contentTypes as $k => $content_type) {
+    foreach ($content_type['fields'] as $key => $fields) {
+      $field_type = $fields['type'];
+    }
+    if (in_array($field_type, $fieldTypes)){
+      $options[$k] = $content_type['name'];
+      unset($field_type);
+    }
+  }
+  
+  return $options;
+}
+
+function _media_ytplayer_field_name() {
+  $fieldTypes = array_keys(_content_field_types());
+  $contentTypes = content_types();
+  foreach ($contentTypes as $k => $content_type) {
+    foreach ($content_type['fields'] as $key => $fields) {
+      $field_name[] = $fields['field_name'];
+    }
+  }
+  
+  return $field_name;
+}
+
 function _media_ytplayer_videos() {
   $content = '';
   $nodes = array();
-  $type = variable_get("media_ytplayer_type", "");
-  //print "type".$type;
-  $query = "SELECT node.nid AS nid FROM {node} node  WHERE node.type in ('" . $type . "')";
-  $result = db_query($query);
-  
-  while ($data = db_fetch_object($result)) {
-    $nodes[] = node_load($data->nid);
+  $types = variable_get("media_ytplayer_type", "");
+  $limit = variable_get("media_ytplayer_limit", 2);
+
+  $contentTypes = '';
+  if (isset($types) && !empty($types)) {
+    foreach ($types as $type) {
+      if (!empty($type)) {
+        $contentTypes .= "'" . $type . "' "; 
+      }
+    }
+    
+    if (!empty($contentTypes)) {
+      $contentTypes = str_replace("' '", "','", $contentTypes);
+
+      $query = "SELECT node.nid AS nid FROM {node} node  WHERE node.type in (" . $contentTypes . ") LIMIT " . $limit . "";
+      $result = db_query($query);
+
+      while ($data = db_fetch_object($result)) {
+        $nodes[] = node_load($data->nid);
+      }
+
+      $data = array(
+        'nodes' => $nodes,
+      );
+    }
+    return $data;
   }
-  
-  $data = array(
-    'nodes' => $nodes,
-  );
-  
-  return $data;
 }
 
 function media_ytplayer_validate($form, &$form_state) {
   $type = $form_state['values']['media_ytplayer_type'];
+  $limit = $form_state['values']['media_ytplayer_limit'];
   
-  if (!is_numeric($type)) {
-    form_set_error('media_ytplayer_type', t('You must enter a type valid'));
+  if (is_numeric($limit)) {
+    form_set_error('media_ytplayer_limit', t('You must enter a numeric value'));
   }
 }
 

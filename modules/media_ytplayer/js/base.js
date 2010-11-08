@@ -1,13 +1,19 @@
 $(document).ready(function(){
     $("#player").jCarouselLite({
-        //btnNext: ".extrainfo .next",
-        //btnPrev: ".extrainfo .prev",
-        btnGo:
-            [".extrainfo .1", ".extrainfo .2",
-            ".extrainfo .3"],
+        btnGo: get_items(),
         scroll:1,
         visible: 1,
         start:0,
         circular: false
     });
 });
+
+var items = [];
+function get_items(){
+    $('div.extrainfo').each(function(index) {
+        i = index + 1;
+        items[index] = ".extrainfo ." + i;
+    });
+
+    return items;
+}
