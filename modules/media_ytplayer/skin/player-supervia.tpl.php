@@ -69,7 +69,7 @@ $ytargs = "?enablejsapi=1&playerapiid=ytplayer";
     <div class="clear"></div>
     
     <div id="more">
-      <a href="<?php print base_path()."videos";?>">> Ver más videos</a>
+      <a href="<?php print base_path()."more";?>">> more</a>
     </div>
   </div>
 </div>
