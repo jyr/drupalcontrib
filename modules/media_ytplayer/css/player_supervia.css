@@ -1,0 +1,39 @@
+#player-supervia #viewer{
+   width:425px;
+   height:320px;
+   display:block;
+}
+
+#player-supervia ul li{
+   width:425px;
+   height:320px;
+   display:block;
+}
+#player-supervia #playlist {
+    margin-top:50px;
+}
+
+#player-supervia #playlist{
+    background:#fff;
+}
+
+#player-supervia #playlist #more{
+    background:#fff;
+    text-align:right;
+}
+
+#player-supervia #playlist .extrainfo{
+    background:#fff;
+    border-bottom: 2px dotted #ccc;
+    width:100%;
+    height:45px;
+}
+
+#player-supervia #playlist .extrainfo a{
+    margin:10px;
+    width:100%;
+}
+
+#player-supervia #playlist .selected a{
+    color:#ccc !important;
+}
