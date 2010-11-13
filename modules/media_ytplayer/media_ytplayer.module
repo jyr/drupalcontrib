@@ -22,39 +22,37 @@ function media_ytplayer_perm() {
   return array("access content");
 }
 
-function media_ytplayer_theme() {
+/**
+ * Implementation of hook_theme().
+ */
+function media_ytplayer_theme($existing, $type, $theme, $path) {
+  //print $theme;
+  $path = drupal_get_path('module', 'media_ytplayer');
+  require_once "./" . $path . "/skin/skin.inc";
+
+  $base = array(
+    'file' => 'skin.inc',
+    'path' => "$path/skin",
+  );
+  
   return array(
-    'player' => array(
+    'player' => $base + array(
       'template' => 'player',
       'arguments' => array('vars' => NULL),
     ),
+    'player_circula' => $base + array(
+      'template' => 'player-circula',
+      'arguments' => array('vars' => NULL),
+    ),
+    'player_supervia' => $base + array(
+      'template' => 'player-supervia',
+      'arguments' => array('vars' => NULL),
+    ),
+    'player_record' => $base + array(
+      'template' => 'player-record',
+      'arguments' => array('vars' => NULL),
+    ),
   );
-}
-
-function template_preprocess_player(&$vars) {
-  media_ytplayer_add_css();
-  
-  media_ytplayer_add_js();
-  media_ytplayer_add_js('swfobject');
-  media_ytplayer_add_js('youtube');
-  media_ytplayer_add_js('jcarousellite');
-  
-}
-
-function media_ytplayer_add_js($file = 'base') {
-  $path = drupal_get_path('module', 'media_ytplayer');
-  
-  if ($file == 'swfobject') { 
-    $file = $file . '/' . $file;
-  }
-  
-  drupal_add_js($path . '/js/' . $file . '.js');
-}
-
-function media_ytplayer_add_css($file = 'media_ytplayer') {
-  $path = drupal_get_path('module', 'media_ytplayer');
-  
-  drupal_add_css($path . '/css/' . $file . '.css');
 }
 
 /**
@@ -67,13 +65,14 @@ function media_ytplayer_block($op = 'list', $delta = 0, $edit = array()) {
   }
   elseif ($op == "view") {
     $content = _media_ytplayer_videos();
+    $skin = _media_ytplayer_set_skin();
 
     $block['subject'] = "Playlist";
     if ($content == '') {
       $block['content'] = "Sorry no content";
     }
     else {
-      $block['content'] = theme('player', $content);
+      $block['content'] = theme($skin, $content);
     }
   }
   
@@ -93,10 +92,28 @@ function media_ytplayer_admin() {
     //'#required' => TRUE,
   );
   
+  $form['media_ytplayer_skin'] = array(
+    '#type' => 'radios',
+    '#title' => t('Skin'),
+    '#options' => array('default'=>t('Default'), 'circula'=>t('Circula'), 'supervia'=>t('Supervia'), 'record'=>t('Record')),
+    '#default_value' => variable_get('media_ytplayer_skin', 'default'),
+    '#description' => t('Select your favorite skin'),
+    //'#required' => TRUE,
+  );
+  
+  $form['media_ytplayer_order'] = array(
+    '#type' => 'radios',
+    '#title' => t('Order videos'),
+    '#options' => array('desc'=>t('Descending'), 'asc'=>t('Ascending')),
+    '#default_value' => variable_get('media_ytplayer_order', 'desc'),
+    '#description' => t(''),
+    //'#required' => TRUE,
+  );
+  
   $form['media_ytplayer_limit'] = array(
     '#type' => 'textfield',
     '#title' => t('Limit'),
-    '#default_value' => variable_get("media_ytplayer_limit", 2),
+    '#default_value' => variable_get("media_ytplayer_limit", 3),
     '#size' => 10,
     '#maxlenght' => 10,
     '#description' => t('Limit of videos to show'),
@@ -113,7 +130,7 @@ function _media_ytplayer_content_type() {
     foreach ($content_type['fields'] as $key => $fields) {
       $field_type = $fields['type'];
     }
-    if (in_array($field_type, $fieldTypes)){
+    if (in_array($field_type, $fieldTypes)) {
       $options[$k] = $content_type['name'];
       unset($field_type);
     }
@@ -139,6 +156,7 @@ function _media_ytplayer_videos() {
   $nodes = array();
   $types = variable_get("media_ytplayer_type", "");
   $limit = variable_get("media_ytplayer_limit", 2);
+  $order = variable_get('media_ytplayer_order', 'desc');
 
   $contentTypes = '';
   if (isset($types) && !empty($types)) {
@@ -151,7 +169,7 @@ function _media_ytplayer_videos() {
     if (!empty($contentTypes)) {
       $contentTypes = str_replace("' '", "','", $contentTypes);
 
-      $query = "SELECT node.nid AS nid FROM {node} node  WHERE node.type in (" . $contentTypes . ") LIMIT " . $limit . "";
+      $query = "SELECT node.nid AS nid, node.created FROM {node} node  WHERE node.type in (" . $contentTypes . ") ORDER BY `node`.`created` " . $order . " LIMIT " . $limit . "";
       $result = db_query($query);
 
       while ($data = db_fetch_object($result)) {
@@ -164,6 +182,27 @@ function _media_ytplayer_videos() {
     }
     return $data;
   }
+}
+
+function _media_ytplayer_set_skin() {
+  $skin = variable_get('media_ytplayer_skin', 'default');
+
+  switch($skin) {
+    case 'default':
+      $skin = 'player';
+      break;
+    case 'circula':
+      $skin = 'player_circula';
+      break;
+    case 'supervia':
+      $skin = 'player_supervia';
+      break;
+    case 'record':
+      $skin = 'player_record';
+      break;
+  }
+  
+  return $skin;
 }
 
 function media_ytplayer_validate($form, &$form_state) {
