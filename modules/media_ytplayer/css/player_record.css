@@ -1,0 +1,20 @@
+.player #viewer {
+    width: 350px;
+    height: 218px;
+}
+
+.player .extrainfo {
+    float:left;
+    padding: 10px;
+}
+
+.videos {
+    float:left;
+}
+.initial {
+    float:left;
+}
+
+.clear {
+    clear: both;
+}

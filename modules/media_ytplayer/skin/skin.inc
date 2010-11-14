@@ -32,9 +32,9 @@ function template_preprocess_player_supervia(&$vars) {
 }
 
 function template_preprocess_player_record(&$vars) {
-  media_ytplayer_add_css();
+  media_ytplayer_add_css('player_record');
   //print_r($vars);
-  media_ytplayer_add_js();
+  media_ytplayer_add_js('player_record');
   media_ytplayer_add_js('swfobject');
   media_ytplayer_add_js('youtube');
   media_ytplayer_add_js('jcarousellite');
