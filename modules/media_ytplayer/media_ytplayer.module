@@ -2,8 +2,8 @@
 //$id$
 
 function _media_ytplayer_loading() {
-  $path = drupal_get_path('module', 'media_ytplayer');
-  require_once "./" . $path . "/skins/skins.inc";
+  $path = dirname(__FILE__);
+  require_once $path . "/skins/skins.inc";
   
   _media_ytplayer_init_skins();
   
@@ -25,17 +25,11 @@ function media_ytplayer_help($path, $arg) {
 }
 
 /**
- * Implementation of hook_perm().
- */
-function media_ytplayer_perm() {
-  return array("access content");
-}
-
-/**
  * Implementation of hook_theme().
  */
 function media_ytplayer_theme() {
-  $path = _media_ytplayer_loading();
+  _media_ytplayer_loading();
+  $path = drupal_get_path('module', 'media_ytplayer');
   $skin = variable_get('media_ytplayer_skins', 'default');
   
   $base = array(
@@ -77,7 +71,7 @@ function media_ytplayer_block($op = 'list', $delta = 0, $edit = array()) {
     
     $block['subject'] = "Playlist";
     if ($content == '') {
-      $block['content'] = "Sorry no content";
+      $block['content'] = t("Sorry no content");
     }
     else {
       $block['content'] = theme($skin, $content);
@@ -149,8 +143,7 @@ function _media_ytplayer_content_type() {
 }
 
 function _media_ytplayer_get_skins() {
-  $path = drupal_get_path('module', 'media_ytplayer');
-  $path = $path . "/skins/";
+  $path = dirname(__FILE__) . "/skins/";
   $skins = opendir($path);
   while (($directory = readdir($skins)) !== FALSE ) { 
     if (is_dir($path . $directory) && $directory != "." && $directory != "..") { 
@@ -196,7 +189,8 @@ function _media_ytplayer_videos() {
                 WHERE node.type in (" . $contentTypes . ") 
                 ORDER BY `node`.`created` " . $order . " LIMIT " . $limit . "";
                 
-      $result = db_query($query);
+      $rq = db_rewrite_sql($query);
+      $result = db_query($rq);
 
       while ($data = db_fetch_object($result)) {
         $nodes[] = node_load($data->nid);
@@ -210,13 +204,14 @@ function _media_ytplayer_videos() {
   }
 }
 
-function media_ytplayer_validate($form, &$form_state) {
+function media_ytplayer_admin_validate($form, &$form_state) {
   $type = $form_state['values']['media_ytplayer_type'];
-  $limit = $form_state['values']['media_ytplayer_limit'];
-  
-  if (is_numeric($limit)) {
-    form_set_error('media_ytplayer_limit', t('You must enter a numeric value'));
+  $limit =  (int) $form_state['values']['media_ytplayer_limit'];
+
+  if ($limit <= 0) { 
+      form_set_error('media_ytplayer_limit', t('You must enter a numeric value'));
   }
+  
 }
 
 function media_ytplayer_menu() {
@@ -224,7 +219,7 @@ function media_ytplayer_menu() {
   
   $items['admin/settings/media_ytplayer'] = array(
     'title' => 'Embedded Media Player',
-    'description' => 'Your config for Embedded Media Player',
+    'description' => 'Configuration for Embedded Media Player',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('media_ytplayer_admin'),
     'access arguments' => array('access administration pages'),
