@@ -8,27 +8,6 @@ function _media_ytplayer_init_skins() {
   
 }
 
-/*function _media_ytplayer_set_skins() {
-  $skins = variable_get('media_ytplayer_skins', 'default');
-
-  switch($skins) {
-    case 'default':
-      $skins = 'player';
-      break;
-    case 'circula':
-      $skins = 'player_circula';
-      break;
-    case 'supervia':
-      $skins = 'player_supervia';
-      break;
-    case 'record':
-      $skins = 'player_record';
-      break;
-  }
-  
-  return $skins;
-}*/
-
 function media_ytplayer_add_js($file = 'base') {
   $path = drupal_get_path('module', 'media_ytplayer');
   $skin = variable_get('media_ytplayer_skins', 'default');
