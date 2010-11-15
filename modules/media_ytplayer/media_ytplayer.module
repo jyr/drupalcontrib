@@ -1,6 +1,15 @@
 <?php
 //$id$
 
+function _media_ytplayer_loading() {
+  $path = drupal_get_path('module', 'media_ytplayer');
+  require_once "./" . $path . "/skins/skins.inc";
+  
+  _media_ytplayer_init_skins();
+  
+  return $path;
+}
+
 /**
  * Implementation of hook_help().
  */
@@ -26,29 +35,16 @@ function media_ytplayer_perm() {
  * Implementation of hook_theme().
  */
 function media_ytplayer_theme() {
-  $path = drupal_get_path('module', 'media_ytplayer');
-  require_once "./" . $path . "/skin/skin.inc";
-
+  $path = _media_ytplayer_loading();
+  $skin = variable_get('media_ytplayer_skins', 'default');
   $base = array(
-    'file' => 'skin.inc',
-    'path' => "$path/skin",
+    'file' => 'skins.inc',
+    'path' => "$path/skins/$skin",
   );
   
   return array(
-    'player' => $base + array(
-      'template' => 'player',
-      'arguments' => array('vars' => NULL),
-    ),
-    'player_circula' => $base + array(
-      'template' => 'player-circula',
-      'arguments' => array('vars' => NULL),
-    ),
-    'player_supervia' => $base + array(
-      'template' => 'player-supervia',
-      'arguments' => array('vars' => NULL),
-    ),
-    'player_record' => $base + array(
-      'template' => 'player-record',
+    $skin => $base + array(
+      'template' => $skin,
       'arguments' => array('vars' => NULL),
     ),
   );
@@ -63,9 +59,10 @@ function media_ytplayer_block($op = 'list', $delta = 0, $edit = array()) {
     $block[0]["info"] = t("Player Youtube");
   }
   elseif ($op == "view") {
+    _media_ytplayer_loading();
+    $skin = variable_get('media_ytplayer_skins', 'default');
     $content = _media_ytplayer_videos();
-    $skin = _media_ytplayer_set_skin();
-
+    
     $block['subject'] = "Playlist";
     if ($content == '') {
       $block['content'] = "Sorry no content";
@@ -91,12 +88,13 @@ function media_ytplayer_admin() {
     //'#required' => TRUE,
   );
   
-  $form['media_ytplayer_skin'] = array(
+  $skins = _media_ytplayer_get_skins();
+  $form['media_ytplayer_skins'] = array(
     '#type' => 'radios',
-    '#title' => t('Skin'),
-    '#options' => array('default'=>t('Default'), 'circula'=>t('Circula'), 'supervia'=>t('Supervia'), 'record'=>t('Record')),
-    '#default_value' => variable_get('media_ytplayer_skin', 'default'),
-    '#description' => t('Select your favorite skin'),
+    '#title' => t('skins'),
+    '#options' => $skins, //array('default'=>t('Default'), 'circula'=>t('Circula'), 'supervia'=>t('Supervia'), 'record'=>t('Record')),
+    '#default_value' => variable_get('media_ytplayer_skins', 'default'),
+    '#description' => t('Select your favorite skins'),
     //'#required' => TRUE,
   );
   
@@ -132,6 +130,19 @@ function _media_ytplayer_content_type() {
     if (in_array($field_type, $fieldTypes)) {
       $options[$k] = $content_type['name'];
       unset($field_type);
+    }
+  }
+  
+  return $options;
+}
+
+function _media_ytplayer_get_skins() {
+  $path = drupal_get_path('module', 'media_ytplayer');
+  $path = $path . "/skins/";
+  $skins = opendir($path);
+  while (($directory = readdir($skins)) !== false ) { 
+    if (is_dir($path . $directory) && $directory != "." && $directory != "..") { 
+      $options[$directory] = ucwords(strtolower($directory));
     }
   }
   
@@ -181,27 +192,6 @@ function _media_ytplayer_videos() {
     }
     return $data;
   }
-}
-
-function _media_ytplayer_set_skin() {
-  $skin = variable_get('media_ytplayer_skin', 'default');
-
-  switch($skin) {
-    case 'default':
-      $skin = 'player';
-      break;
-    case 'circula':
-      $skin = 'player_circula';
-      break;
-    case 'supervia':
-      $skin = 'player_supervia';
-      break;
-    case 'record':
-      $skin = 'player_record';
-      break;
-  }
-  
-  return $skin;
 }
 
 function media_ytplayer_validate($form, &$form_state) {
