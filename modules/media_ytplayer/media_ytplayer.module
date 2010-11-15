@@ -92,7 +92,7 @@ function media_ytplayer_admin() {
   $form['media_ytplayer_skins'] = array(
     '#type' => 'radios',
     '#title' => t('skins'),
-    '#options' => $skins, //array('default'=>t('Default'), 'circula'=>t('Circula'), 'supervia'=>t('Supervia'), 'record'=>t('Record')),
+    '#options' => $skins,
     '#default_value' => variable_get('media_ytplayer_skins', 'default'),
     '#description' => t('Select your favorite skins'),
     //'#required' => TRUE,
