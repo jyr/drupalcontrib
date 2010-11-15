@@ -1,6 +1,11 @@
 <?php
 // $Id$
 
+/**
+ * @file
+ * The skins system
+ */
+ 
 function _media_ytplayer_init_skins() {
   $path = drupal_get_path('module', 'media_ytplayer');
   $skin = variable_get('media_ytplayer_skins', 'default');
@@ -16,7 +21,7 @@ function media_ytplayer_add_js($file = 'base') {
     $file = $file . '/' . $file;
     drupal_add_js($path . '/js/' . $file . '.js');
   }
-  else if ($file == 'base') {
+  elseif ($file == 'base') {
     drupal_add_js($path . '/skins/' . $skin . '/js/' . $file . '.js');
   }
   else {

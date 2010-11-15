@@ -37,15 +37,27 @@ function media_ytplayer_perm() {
 function media_ytplayer_theme() {
   $path = _media_ytplayer_loading();
   $skin = variable_get('media_ytplayer_skins', 'default');
+  
   $base = array(
     'file' => 'skins.inc',
     'path' => "$path/skins/$skin",
   );
   
+  $embed = array(
+    'file' => 'embed.theme.inc',
+    'path' => "$path/embed",
+  );
+ 
   return array(
     $skin => $base + array(
       'template' => $skin,
       'arguments' => array('vars' => NULL),
+    ),
+    'embed_youtube_viewer' => $embed + array(
+      'template' => 'embed_youtube_viewer',
+      'arguments' => 
+          array('nodes' => NULL, 'width' => NULL, 'height' => NULL, 'field' => _media_ytplayer_field_name(), 
+                'url' => 'http://www.youtube.com/v/', 'args' => '?enablejsapi=1&playerapiid=ytplayer'),
     ),
   );
 }
@@ -101,7 +113,7 @@ function media_ytplayer_admin() {
   $form['media_ytplayer_order'] = array(
     '#type' => 'radios',
     '#title' => t('Order videos'),
-    '#options' => array('desc'=>t('Descending'), 'asc'=>t('Ascending')),
+    '#options' => array('desc' => t('Descending'), 'asc' => t('Ascending')),
     '#default_value' => variable_get('media_ytplayer_order', 'desc'),
     '#description' => t(''),
     //'#required' => TRUE,
@@ -140,7 +152,7 @@ function _media_ytplayer_get_skins() {
   $path = drupal_get_path('module', 'media_ytplayer');
   $path = $path . "/skins/";
   $skins = opendir($path);
-  while (($directory = readdir($skins)) !== false ) { 
+  while (($directory = readdir($skins)) !== FALSE ) { 
     if (is_dir($path . $directory) && $directory != "." && $directory != "..") { 
       $options[$directory] = ucwords(strtolower($directory));
     }
@@ -179,7 +191,11 @@ function _media_ytplayer_videos() {
     if (!empty($contentTypes)) {
       $contentTypes = str_replace("' '", "','", $contentTypes);
 
-      $query = "SELECT node.nid AS nid, node.created FROM {node} node  WHERE node.type in (" . $contentTypes . ") ORDER BY `node`.`created` " . $order . " LIMIT " . $limit . "";
+      $query = "SELECT node.nid AS nid, node.created 
+                FROM {node} node  
+                WHERE node.type in (" . $contentTypes . ") 
+                ORDER BY `node`.`created` " . $order . " LIMIT " . $limit . "";
+                
       $result = db_query($query);
 
       while ($data = db_fetch_object($result)) {
@@ -217,4 +233,3 @@ function media_ytplayer_menu() {
   
   return $items;
 }
-
